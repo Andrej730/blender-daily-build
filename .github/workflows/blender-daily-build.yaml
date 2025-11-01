@@ -3,6 +3,9 @@ name: Blender daily build
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build_blender:
     name: Build Blender

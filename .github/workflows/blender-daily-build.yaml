@@ -2,13 +2,6 @@ name: Blender daily build
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "0 2 * * *"
-  push:
-    branches:
-      - main
-      - 'run-ci/**'
-  pull_request:
 
 jobs:
   build_blender:
@@ -51,8 +44,17 @@ jobs:
         run: |
           cd release
           md5sum blender.tar.xz > blender.tar.xz.md5
-      - name: Upload artifact 
-        uses: actions/upload-artifact@v4
+      - name: Get current date
+        id: date
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
         with:
-          name: blender
-          path: "release"
+          tag_name: blender-build-${{ steps.date.outputs.date }}
+          name: Blender Build ${{ steps.date.outputs.date }}
+          draft: false
+          prerelease: false
+          files: |
+            release/blender.tar.xz
+            release/blender.tar.xz.md5

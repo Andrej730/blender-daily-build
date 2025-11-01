@@ -47,7 +47,7 @@ jobs:
           mkdir release
           cp -r blender-build/build_linux/bin release/blender
           cd release
-          tar Jcf blender.tar.xz blender
+          tar Jcf blender.tar.xz blender/*
           rm -rf blender
       - name: Create MD5 checksum file
         run: |

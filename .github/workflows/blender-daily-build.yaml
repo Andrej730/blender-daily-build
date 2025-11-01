@@ -2,24 +2,26 @@ name: Blender daily build
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "0 2 * * *"
-  push:
-    branches:
-      - main
-      - 'run-ci/**'
-  pull_request:
+
+permissions:
+  contents: write
 
 jobs:
   build_blender:
     name: Build Blender
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
       - name: Checkout Blender source code from Blender official repository
         run: |
           mkdir -p blender-build
           cd blender-build
-          git clone https://projects.blender.org/blender/blender.git
+          git clone --branch v4.5.0 --depth 1 https://projects.blender.org/blender/blender.git
+      - name: Apply patch
+        run: |
+          cd blender-build/blender
+          patch -p1 < ../../enum_values_defaults_fix.patch
       - name: Install initial packages
         run: |
           sudo apt update
@@ -40,19 +42,28 @@ jobs:
       - name: Test Blender Binary
         run: |
           ./blender-build/build_linux/bin/blender --background --factory-startup -noaudio
-      - name: Compress Blender for the artifacts
+      - name: Compress Blender for the release
         run: |
           mkdir release
           cp -r blender-build/build_linux/bin release/blender
           cd release
-          tar Jcf blender.tar.xz blender
+          tar -C blender -Jcf blender.tar.xz ./
           rm -rf blender
       - name: Create MD5 checksum file
         run: |
           cd release
           md5sum blender.tar.xz > blender.tar.xz.md5
-      - name: Upload artifact 
-        uses: actions/upload-artifact@v4
+      - name: Get current date
+        id: date
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
         with:
-          name: blender
-          path: "release"
+          tag_name: blender-build-${{ steps.date.outputs.date }}
+          name: Blender Build ${{ steps.date.outputs.date }}
+          draft: false
+          prerelease: false
+          files: |
+            release/blender.tar.xz
+            release/blender.tar.xz.md5

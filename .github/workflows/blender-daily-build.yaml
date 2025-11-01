@@ -21,7 +21,7 @@ jobs:
       - name: Apply patch
         run: |
           cd blender-build/blender
-          git apply ../../my_change.patch
+          patch -p1 < ../../my_change.patch
       - name: Install initial packages
         run: |
           sudo apt update

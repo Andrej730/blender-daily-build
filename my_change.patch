@@ -1,0 +1,49 @@
+--- a/doc/python_api/sphinx_doc_gen.py
++++ b/doc/python_api/sphinx_doc_gen.py
+@@ -1331,7 +1331,7 @@ def pycontext2sphinx(basepath):
+             type_descr = prop.get_type_description(
+                 class_fmt=":class:`bpy.types.{:s}`",
+                 mathutils_fmt=":class:`mathutils.{:s}`",
+-                literal_fmt="``{:s}``",
++                literal_fmt="``{!r}``",  # String with quotes.
+                 collection_id=_BPY_PROP_COLLECTION_ID,
+                 enum_descr_override=enum_descr_override,
+             )
+@@ -1502,7 +1502,7 @@ def pyrna2sphinx(basepath):
+ 
+         kwargs["class_fmt"] = ":class:`{:s}`"
+         kwargs["mathutils_fmt"] = ":class:`mathutils.{:s}`"
+-        kwargs["literal_fmt"] = "``{:s}``"
++        kwargs["literal_fmt"] = "``{!r}``"  # String with quotes.
+ 
+         kwargs["collection_id"] = _BPY_PROP_COLLECTION_ID
+ 
+@@ -1623,7 +1623,7 @@ def pyrna2sphinx(basepath):
+             type_descr = prop.get_type_description(
+                 class_fmt=":class:`{:s}`",
+                 mathutils_fmt=":class:`mathutils.{:s}`",
+-                literal_fmt="``{:s}``",
++                literal_fmt="``{!r}``",  # String with quotes.
+                 collection_id=_BPY_PROP_COLLECTION_ID,
+                 enum_descr_override=enum_descr_override,
+             )
+@@ -1706,7 +1706,7 @@ def pyrna2sphinx(basepath):
+                     type_descr = prop.get_type_description(
+                         as_ret=True, class_fmt=":class:`{:s}`",
+                         mathutils_fmt=":class:`mathutils.{:s}`",
+-                        literal_fmt="``{:s}``",
++                        literal_fmt="``{!r}``",  # String with quotes.
+                         collection_id=_BPY_PROP_COLLECTION_ID,
+                         enum_descr_override=enum_descr_override,
+                     )
+--- a/scripts/modules/rna_info.py
++++ b/scripts/modules/rna_info.py
+@@ -360,7 +360,7 @@ class InfoPropertyRNA:
+                 # self.default_str = repr(self.default)  # repr or set()
+                 self.default_str = "{{{:s}}}".format(repr(list(sorted(self.default)))[1:-1])
+             else:
+-                self.default_str = self.default
++                self.default_str = repr(self.default)
+         elif self.array_length:
+             if self.array_dimensions[1] == 0:  # single dimension array, we already took care of multi-dimensions ones.
+                 # special case for floats

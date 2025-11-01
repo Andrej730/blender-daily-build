@@ -11,37 +11,41 @@ jobs:
     name: Build Blender
     runs-on: ubuntu-latest
     steps:
-      # - name: Checkout Blender source code from Blender official repository
-      #   run: |
-      #     mkdir -p blender-build
-      #     cd blender-build
-      #     git clone https://projects.blender.org/blender/blender.git
-      # - name: Install initial packages
-      #   run: |
-      #     sudo apt update
-      #     sudo apt install python3 git git-lfs
-      # - name: Install basic building environment
-      #   run: |
-      #     cd blender-build/blender
-      #     ./build_files/build_environment/install_linux_packages.py
-      # - name: Download libraries
-      #   run: |
-      #     cd blender-build/blender
-      #     ./build_files/utils/make_update.py --use-linux-libraries
-      # - name: Build Blender
-      #   run: |
-      #     cd blender-build/blender
-      #     make update
-      #     make
-      # - name: Test Blender Binary
-      #   run: |
-      #     ./blender-build/build_linux/bin/blender --background --factory-startup -noaudio
-      - name: Create fake build for testing
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Checkout Blender source code from Blender official repository
         run: |
-          mkdir -p release/blender
-          echo "This is a test Blender build" > release/blender/blender
-          echo "Test file 1" > release/blender/test1.txt
-          echo "Test file 2" > release/blender/test2.txt
+          mkdir -p blender-build
+          cd blender-build
+          git clone --branch v4.5.0 --depth 1 https://projects.blender.org/blender/blender.git
+      - name: Apply patch
+        run: |
+          cd blender-build/blender
+          git apply ../../my_change.patch
+      - name: Install initial packages
+        run: |
+          sudo apt update
+          sudo apt install python3 git git-lfs
+      - name: Install basic building environment
+        run: |
+          cd blender-build/blender
+          ./build_files/build_environment/install_linux_packages.py
+      - name: Download libraries
+        run: |
+          cd blender-build/blender
+          ./build_files/utils/make_update.py --use-linux-libraries
+      - name: Build Blender
+        run: |
+          cd blender-build/blender
+          make update
+          make
+      - name: Test Blender Binary
+        run: |
+          ./blender-build/build_linux/bin/blender --background --factory-startup -noaudio
+      - name: Compress Blender for the release
+        run: |
+          mkdir release
+          cp -r blender-build/build_linux/bin release/blender
           cd release
           tar Jcf blender.tar.xz blender
           rm -rf blender
